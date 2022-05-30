@@ -48,7 +48,7 @@ from flask_cors import CORS, cross_origin
 
 
 ```bash
-  cd Flask
+   cd Flask
    python3 index.py
    cd ./
    cd Express
