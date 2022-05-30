@@ -43,13 +43,16 @@ from flask import Flask, jsonify,request
 import json
 from flask_cors import CORS, cross_origin
 ```
-##Test
-```
-   cd Flask
+## Tests
+
+
+
+```bash
+  cd Flask
    python3 index.py
    cd ./
    cd Express
    npm install
    npm run dev
-   ```
+```
  
