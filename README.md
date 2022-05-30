@@ -20,14 +20,6 @@ In this project,We make automatic text summarizzer which summarize different typ
 | `api_key` | **Required**. Your API key |
 | `organisaton_key` |**Required**. Your Organisaton key |
 
-## Deployment
-
-To deploy this project run
-
-```bash
-  npm run deploy
-```
-
 Need to import this library,if not download use pip install
 ```bash
 import openai
@@ -35,4 +27,29 @@ import wget
 import pathlib
 import pdfplumber
 import numpy as np
+from regex import W
+import numpy as np
+import nltk
+nltk.download('stopwords')
+nltk.download('punkt')
+import string
+from gensim.models import Word2Vec
+from nltk.tokenize import sent_tokenize as nlkt_sent_tokenize
+from nltk.tokenize import word_tokenize as nlkt_word_tokenize
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from nltk.corpus import stopwords
+from scipy.spatial.distance import cosine
+from flask import Flask, jsonify,request
+import json
+from flask_cors import CORS, cross_origin
 ```
+##Test
+```
+   cd Flask
+   python3 index.py
+   cd ./
+   cd Express
+   npm install
+   npm run dev
+   ```
+ 
