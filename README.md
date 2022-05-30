@@ -20,3 +20,19 @@ In this project,We make automatic text summarizzer which summarize different typ
 | `api_key` | **Required**. Your API key |
 | `organisaton_key` |**Required**. Your Organisaton key |
 
+## Deployment
+
+To deploy this project run
+
+```bash
+  npm run deploy
+```
+
+Need to import this library,if not download use pip install
+```bash
+import openai
+import wget
+import pathlib
+import pdfplumber
+import numpy as np
+```
