@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html style="font-size: 16px;">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="keywords" content="Marketing Services">
+    <meta name="description" content="">
+    <title>Saransh</title>
+    <style>
+      body{
+        padding:0;
+        margin:0
+      }
+      #Title{
+         border: 2px solid black;
+         padding: 5vh 5vw;
+         background-color: rgb(15, 15, 90);
+         color: rgb(198, 201, 214);
+         font-family:Verdana, Geneva, Tahoma, sans-serif;
+         font-size: 2rem;
+         font-weight: bolder;
+      }
+      button{
+        padding: 0.5rem 1rem;
+        border: 2px solid black;
+        border-radius: 0.4rem;
+        font-family:Verdana, Geneva, Tahoma, sans-serif;
+         font-size: 1rem;
+         font-weight: bolder;
+         margin:1vh 35vw;
+         cursor: pointer
+      }
+      #input{
+         padding: 5vh 10vw
+      }
+      input{
+        border: 2px solid black;
+        border-radius: 0.4rem;
+        font-family:Verdana, Geneva, Tahoma, sans-serif;
+         font-size: 1rem;
+         font-weight: bolder;
+      }
+      .textarea{
+        padding: 4vh 10vw;
+      }
+      textarea{
+        padding: 2vh;
+        background-color: rgb(33, 37, 56);
+        border-radius: 1.3rem;
+        color: white;
+      }
+      #jsonText{
+        display: flex;
+        padding: 2vh;
+        background-color: rgb(33, 37, 56);
+        border-radius: 1.3rem;
+        color: white;
+        overflow: hidden;
+    text-overflow: ellipsis;
+      }
+      @media (max-width: 600px) {
+        input{
+          padding: 2vh 10vw;
+          width: 80vw;
+        }
+      button {
+           margin:1vh 30vw;
+         }
+      }
+      </style>
+</head>
+<body>
+  <div id="Title">Saransh</div>
+  <div id="input">
+    <textarea style="width: 80vw; height: 50vh;" id="inpText" placeholder="Enter Your Text Here"></textarea>
+    <button type="button" id="btnUpload">Upload</button>
+  </div>
+  <div id="Title">Summary</div>
+  <div class="textarea">
+    <textarea style="width: 80vw; height: 50vh;" id="resultText" placeholder="Your Summary text will appear here..."></textarea>
+    <div id="Title">JSON</div>
+    <pre id="jsonText"></pre>
+  </div>
+  
+  <script>
+    const inpText = document.getElementById("inpText");
+    const btnUpload = document.getElementById("btnUpload");
+    const resultText = document.getElementById("resultText");
+    const jsonText = document.getElementById("jsonText")
+
+    btnUpload.addEventListener("click", async () => {
+        const inputText = inpText.value;
+        //console.log(inputText)
+        const res = await fetch("http://127.0.0.1:5000/", {
+            method: "post",
+            body: JSON.stringify({
+              "speech":inputText
+            })
+        })
+        const response = await res.json()
+        console.log(response)
+        resultText.value = response
+        jsonText.innerHTML = JSON.stringify(response)
+    });
+</script>
+</body>
+</html>

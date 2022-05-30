@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html style="font-size: 16px;">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="keywords" content="Marketing Services">
+    <meta name="description" content="">
+    <title>Liva</title>
+    <link rel="stylesheet" href="nicepage.css" media="screen">
+<link rel="stylesheet" href="Page-6.css" media="screen">
+    <script class="u-script" type="text/javascript" src="jquery-1.9.1.min.js" defer=""></script>
+    <script class="u-script" type="text/javascript" src="nicepage.js" defer=""></script>
+    <meta name="generator" content="Nicepage 4.11.5, nicepage.com">
+    <link id="u-theme-google-font" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,500,500i,600,600i,700,700i,800,800i|Archivo+Black:400">
+    <style>
+      
+      #Title{
+         border: 2px solid black;
+         padding: 5vh 5vw;
+         background-color: rgb(15, 15, 90);
+         color: rgb(198, 201, 214);
+         font-family:Verdana, Geneva, Tahoma, sans-serif;
+         font-size: 2rem;
+         font-weight: bolder;
+      }
+      button,input{
+        padding: 0.5rem 1rem;
+        border: 2px solid black;
+        border-radius: 0.4rem;
+        font-family:Verdana, Geneva, Tahoma, sans-serif;
+         font-size: 1rem;
+         font-weight: bolder;
+      }
+      #input{
+         padding: 5vh 10vw;
+      }
+      #textarea{
+        padding: 4vh 10vw;
+        
+      }
+      #jsonText{
+        padding: 2vh;
+        border-radius: 1.3rem; 
+        background-color: rgb(33, 37, 56);
+        color: white;
+        word-wrap: break-word;
+        overflow: hidden;
+    text-overflow: ellipsis;
+      }
+      textarea{
+        padding: 2vh;
+        background-color: rgb(33, 37, 56);
+        border-radius: 1.3rem;
+        color: white;
+      }
+      @media (max-width: 600px) {
+        input{
+          padding: 2vh 10vw;
+          width: 80vw;
+        }
+      button {
+           margin:1vh 30vw;
+         }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="Title">Saransh</div>
+    <div id="input">
+      <input type="file" id="inpFile">
+    <button type="button" id="btnUpload">Upload</button>
+    </div>
+    <div id="Title">Summary</div>
+    <div id="textarea">
+      <textarea style="width: 80vw; height: 60vh;" id="resultText" placeholder="Your PDF text will appear here..."></textarea>
+      <div id="Title">JSON</div>
+      <pre id="jsonText"></pre>
+    </div>
+    
+    <script>
+      const inpFile = document.getElementById("inpFile");
+      const btnUpload = document.getElementById("btnUpload");
+      const resultText = document.getElementById("resultText");
+      const jsonText = document.getElementById("jsonText");
+
+      btnUpload.addEventListener("click", async() => {
+          const formData = new FormData();
+
+          formData.append("pdfFile", inpFile.files[0]);
+
+          const res = await fetch("/extract-text", {
+              method: "post",
+              body: formData
+          })
+          var response = await res.json();
+          //console.log(response)
+          
+          resultText.value = response.summary;
+          jsonText.innerHTML = JSON.stringify(response,null ,4);
+          
+      });
+  </script>
+  </body>
+</html>
