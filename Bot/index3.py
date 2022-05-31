@@ -1,20 +1,41 @@
 from regex import W
+import wget
+import pathlib
+import pdfplumber
 import numpy as np
+from flask import Flask,request
+import requests
+import time
+import urllib.request
 import nltk
 nltk.download('stopwords')
 nltk.download('punkt')
+import re
 import string
 from gensim.models import Word2Vec
 from nltk.tokenize import sent_tokenize as nlkt_sent_tokenize
 from nltk.tokenize import word_tokenize as nlkt_word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from nltk.corpus import stopwords
+import numpy as np
 from scipy.spatial.distance import cosine
 from flask import Flask, jsonify,request
 import json
-from flask_cors import CORS, cross_origin
+import os
 
+n=0
+bot_token = 
+welcome = "Hi, I am Saransh , a Text-Summarizer Bot. Sometime you have long Paragraph or Pages and you are don't want to read it. So, Use Me. You can send text messages or pdf and I can share Summary of it"
 
+def getPaper(paper_url, filename="random_paper.pdf"):
+    """
+    Downloads a paper from it's arxiv page and returns
+    the local path to that file.
+    """
+    downloadedPaper = wget.download(paper_url, filename)    
+    downloadedPaperFilePath = pathlib.Path(downloadedPaper)
+
+    return downloadedPaperFilePath
 
 def similarity(v1, v2):
     score = 0.0
@@ -126,29 +147,45 @@ def summarize(text, emdedding_model):
 
     summary = "\n".join([s[1] for s in sentences_summary])
     return summary
-
-def summarAndsend(text):
+def summarAndsend(chat_id,text):
+     if text=="/start":
+      a=welcome
+     else:    
       clean_sentences = cleanup_sentences(text)
       words = []
       for sent in clean_sentences:
         words.append(nlkt_word_tokenize(sent))
       model = Word2Vec(words, min_count=1, sg = 1)
       a = summarize(text, model)
-      return a
+     
+     requests.get("https://api.telegram.org/bot"+bot_token+"/sendMessage?chat_id="+chat_id+"&text="+a)
 
 
-app = Flask(__name__)
-CORS(app, support_credentials=True)
 
-@app.route('/',methods=['POST'])
-def predict():
-    print("HI")
-    event=json.loads(request.data)
-    spe = event["speech"]
-    print(type(spe))
-    response = summarAndsend(spe)
-    print(response)
-    return jsonify(response)
-
-if __name__=='__main__':
-    app.run(debug=True) 
+while(1):
+    req = requests.get("https://api.telegram.org/bot"+bot_token+"/getUpdates")
+    if "result" in json.loads(req.content):
+         content = json.loads(req.content)["result"]
+         for i in range(n,len(content)):
+           if "text" in content[i]["message"]:
+             print(i)
+             chat_id = str(content[i]["message"]["chat"]["id"])
+             text = content[i]["message"]["text"]
+             
+           elif "document" in content[i]["message"]:
+             chat_id = str(content[i]["message"]["chat"]["id"])
+             file_id = content[i]["message"]["document"]["file_id"]  
+             docreq = requests.get("https://api.telegram.org/bot"+bot_token+"/getFile?file_id="+file_id)
+             file_path = json.loads(docreq.content)["result"]["file_path"]
+             print(file_path)
+             getPaper("https://api.telegram.org/bot"+bot_token+"/"+file_path,filename="random_paper.pdf"+str(i))
+             paperFilePath = "random_paper.pdf"+str(i)
+             paperContent = pdfplumber.open(paperFilePath).pages
+             text = ""
+             for page in paperContent:    
+                text = text + " " +page.extract_text() 
+           summarAndsend(str(chat_id),text)    
+           n=n+1
+           print(n)
+    time.sleep(2);   
+    
