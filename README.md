@@ -56,3 +56,9 @@ from flask_cors import CORS, cross_origin
    npm run dev
 ```
  
+##Bot_Test
+ ```bash
+    cd Bot
+    Add Telegram_Bot token in line number 27
+    python3 index3.py
+ ```   
