@@ -2,7 +2,7 @@
 
 <img src="Media/Screenshot (499).png"></img><br>
 
-In this project,We make automatic text summarizzer which summarize different types of text data sources.
+In this project, we have made an automatic text summarizzer which summarizes different types of text data sources.
 
  We make the system to generate a summary of the text and provide a JSON output for the same. Alternatively, if there are web articles, PDFs, etc uploaded by the educator, the solution is able to summarize the large content into bite-sized information.
 
@@ -20,7 +20,7 @@ In this project,We make automatic text summarizzer which summarize different typ
 | `api_key` | **Required**. Your API key |
 | `organisaton_key` |**Required**. Your Organisaton key |
 
-Need to import this library,if not download use pip install
+You need to import these libraries, if not downloaded use pip install
 ```bash
 import openai
 import wget
@@ -43,13 +43,16 @@ from flask import Flask, jsonify,request
 import json
 from flask_cors import CORS, cross_origin
 ```
-##Test
-```
+## Tests
+
+
+
+```bash
    cd Flask
    python3 index.py
    cd ./
    cd Express
    npm install
    npm run dev
-   ```
+```
  
