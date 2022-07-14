@@ -1,191 +1,152 @@
-from regex import W
+import os
+import telebot
+import openai
 import wget
 import pathlib
 import pdfplumber
 import numpy as np
-from flask import Flask,request
-import requests
-import time
-import urllib.request
 import nltk
-nltk.download('stopwords')
 nltk.download('punkt')
-import re
-import string
-from gensim.models import Word2Vec
-from nltk.tokenize import sent_tokenize as nlkt_sent_tokenize
-from nltk.tokenize import word_tokenize as nlkt_word_tokenize
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from nltk.corpus import stopwords
-import numpy as np
-from scipy.spatial.distance import cosine
-from flask import Flask, jsonify,request
-import json
-import os
+import jsonpickle
+import PyPDF2
+import convertapi
+import requests
+import pathlib
+import urllib.request
 
-n=0
-bot_token = 
-welcome = "Hi, I am Saransh , a Text-Summarizer Bot. Sometime you have long Paragraph or Pages and you are don't want to read it. So, Use Me. You can send text messages or pdf and I can share Summary of it"
+secret_key = os.environ['secret_key']
+convertapi.api_secret = secret_key
+API_KEY = os.environ['API_KEY']
+bot=telebot.TeleBot(API_KEY)
 
-def getPaper(paper_url, filename="random_paper.pdf"):
-    """
-    Downloads a paper from it's arxiv page and returns
-    the local path to that file.
-    """
-    downloadedPaper = wget.download(paper_url, filename)    
-    downloadedPaperFilePath = pathlib.Path(downloadedPaper)
 
-    return downloadedPaperFilePath
 
-def similarity(v1, v2):
-    score = 0.0
-    if np.count_nonzero(v1) != 0 and np.count_nonzero(v2) != 0:
-        score = ((1 - cosine(v1, v2)) + 1) / 2
-    return score
+@bot.message_handler(commands=['start'])
+def start(message):
+  bot.send_message(message.chat.id,"Hi, I am Saransh , a Text-Summarizer Bot. Sometime you have long Paragraph or Pages and you are don't want to read it. So, Use Me. You can send text messages or pdf and I can share Summary of it \n Press /text to start\n"
+)
 
-def sent_tokenize(text):
-    sents = nlkt_sent_tokenize(text)
-    sents_filtered = []
-    for s in sents:
-        sents_filtered.append(s)
-    return sents_filtered
+#TLDR_POSTFIX = "\n tl;dr:"
+tldr_tag = "\n tl;dr:"
+SUMMARIZE_PREFIX = "Summarize this for a second-grade student:\n\n"
+ENGINE = "text-curie-001"
+BATCH_SIZE = 500
+NUM_TOKENS = 125
+my_secret = os.environ['openapikey']
+OPENAI_API_KEY = my_secret
+openai.api_key = OPENAI_API_KEY
 
-def cleanup_sentences(text):
-    stop_words = set(stopwords.words('english'))
-    sentences = sent_tokenize(text)
-    sentences_cleaned = []
-    for sent in sentences:
-        words = nlkt_word_tokenize(sent)
-        words = [w for w in words if w not in string.punctuation]
-        words = [w for w in words if not w.lower() in stop_words]
-        words = [w.lower() for w in words]
-        sentences_cleaned.append(" ".join(words))
-    return sentences_cleaned
 
-def get_tf_idf(sentences):
-    vectorizer = CountVectorizer()
-    sent_word_matrix = vectorizer.fit_transform(sentences)
+def extract_input_text(file_object):
+    text = ""
+    with pdfplumber.open(file_object) as pdf:
+        for page in pdf.pages:
+            text = text + page.extract_text() + " "
+    return text
 
-    transformer = TfidfTransformer(norm=None, sublinear_tf=False, smooth_idf=False)
-    tfidf = transformer.fit_transform(sent_word_matrix)
-    tfidf = tfidf.toarray()
+def post_processing(response_text):
+    try:
+        fullstop_index = response_text.rindex('.')
+        response_text = response_text[:fullstop_index + 1]
+    except Exception as e:
+        print(e)
+    return response_text.replace('\\n', '')
 
-    centroid_vector = tfidf.sum(0)
-    centroid_vector = np.divide(centroid_vector, centroid_vector.max())
+def showPaperSummary(input_text):
+    gpt3_prompt = SUMMARIZE_PREFIX + input_text + tldr_tag
+    response = openai.Completion.create(
+        engine=ENGINE,
+        prompt=gpt3_prompt,
+        temperature=0,
+        max_tokens=NUM_TOKENS,
+        top_p=1.0,
+        frequency_penalty=1.0,
+        presence_penalty=1.0
+    )
+    batch_summary = response["choices"][0]["text"]
 
-    feature_names = vectorizer.get_feature_names()
+    return post_processing(response_text = batch_summary)
 
-    relevant_vector_indices = np.where(centroid_vector > 0.3)[0]
-
-    word_list = list(np.array(feature_names)[relevant_vector_indices])
-    return word_list
-
-#Populate word vector with all embeddings.
-#This word vector is a look up table that is used
-#for getting the centroid and sentences embedding representation.
-def word_vectors_cache(sentences, embedding_model):
-    word_vectors = dict()
-    for sent in sentences:
-        words = nlkt_word_tokenize(sent)
-        for w in words:
-            word_vectors.update({w: embedding_model.wv[w]})
-    return word_vectors
-
-# Sentence embedding representation with sum of word vectors
-def build_embedding_representation(words, word_vectors, embedding_model):
-    embedding_representation = np.zeros(embedding_model.vector_size, dtype="float32")
-    word_vectors_keys = set(word_vectors.keys())
-    count = 0
-    for w in words:
-        if w in word_vectors_keys:
-            embedding_representation = embedding_representation + word_vectors[w]
-            count += 1
-    if count != 0:
-        embedding_representation = np.divide(embedding_representation, count)
-    return embedding_representation
-
-def summarize(text, emdedding_model):
-    raw_sentences = sent_tokenize(text)
-    clean_sentences = cleanup_sentences(text)
-    # for i, s in enumerate(raw_sentences):
-    #     print(i, s)
-    # for i, s in enumerate(clean_sentences):
-    #     print(i, s)
-    centroid_words = get_tf_idf(clean_sentences)
-    # print(len(centroid_words), centroid_words)
-    word_vectors = word_vectors_cache(clean_sentences, emdedding_model)
-    #Centroid embedding representation
-    centroid_vector = build_embedding_representation(centroid_words, word_vectors, emdedding_model)
-    sentences_scores = []
-    for i in range(len(clean_sentences)):
-        scores = []
-        words = clean_sentences[i].split()
-
-        #Sentence embedding representation
-        sentence_vector = build_embedding_representation(words, word_vectors, emdedding_model)
-
-        #Cosine similarity between sentence embedding and centroid embedding
-        score = similarity(sentence_vector, centroid_vector)
-        sentences_scores.append((i, raw_sentences[i], score, sentence_vector))
-    sentence_scores_sort = sorted(sentences_scores, key=lambda el: el[2], reverse=True)
-    count = 0
-    sentences_summary = []
-    #Handle redundancy
-    for s in sentence_scores_sort:
-        if count > 100:
-            break
-        include_flag = True
-        for ps in sentences_summary:
-            sim = similarity(s[3], ps[3])
-            if sim > 0.95:
-                include_flag = False
-        if include_flag:
-            sentences_summary.append(s)
-            count += len(s[1].split())
-
-        sentences_summary = sorted(sentences_summary, key=lambda el: el[0], reverse=False)
-
-    summary = "\n".join([s[1] for s in sentences_summary])
+def summ_batches(input_text):
+    sentences = nltk.tokenize.sent_tokenize(input_text)
+    tokens = 0
+    batch_sentence = ""
+    batches = []
+    for sentence in sentences:
+        tokens = tokens + len(nltk.word_tokenize(sentence))
+        if tokens <= BATCH_SIZE:
+            batch_sentence = batch_sentence + sentence
+        else:
+            batches.append(batch_sentence)
+            batch_sentence = sentence
+            tokens = len(nltk.word_tokenize(sentence))
+    if batch_sentence not in batches:
+        batches.append(batch_sentence) 
+    summary = ''
+    for batch in batches:
+        response = showPaperSummary(batch)
+        summary = summary + response
     return summary
-def summarAndsend(chat_id,text):
-     if text=="/start":
-      a=welcome
-     else:    
-      clean_sentences = cleanup_sentences(text)
-      words = []
-      for sent in clean_sentences:
-        words.append(nlkt_word_tokenize(sent))
-      model = Word2Vec(words, min_count=1, sg = 1)
-      a = summarize(text, model)
-     
-     requests.get("https://api.telegram.org/bot"+bot_token+"/sendMessage?chat_id="+chat_id+"&text="+a)
 
 
 
-while(1):
-    req = requests.get("https://api.telegram.org/bot"+bot_token+"/getUpdates")
-    if "result" in json.loads(req.content):
-         content = json.loads(req.content)["result"]
-         for i in range(n,len(content)):
-           if "text" in content[i]["message"]:
-             print(i)
-             chat_id = str(content[i]["message"]["chat"]["id"])
-             text = content[i]["message"]["text"]
-             
-           elif "document" in content[i]["message"]:
-             chat_id = str(content[i]["message"]["chat"]["id"])
-             file_id = content[i]["message"]["document"]["file_id"]  
-             docreq = requests.get("https://api.telegram.org/bot"+bot_token+"/getFile?file_id="+file_id)
-             file_path = json.loads(docreq.content)["result"]["file_path"]
-             print(file_path)
-             getPaper("https://api.telegram.org/bot"+bot_token+"/"+file_path,filename="random_paper.pdf"+str(i))
-             paperFilePath = "random_paper.pdf"+str(i)
-             paperContent = pdfplumber.open(paperFilePath).pages
-             text = ""
-             for page in paperContent:    
-                text = text + " " +page.extract_text() 
-           summarAndsend(str(chat_id),text)    
-           n=n+1
-           print(n)
-    time.sleep(2);   
-    
+
+def text_summarize(message):
+  a =jsonpickle.encode(message.text)
+  a=summ_batches(a)
+  a=a.replace('\n',"")
+  bot.send_message(message.chat.id,a)
+
+
+def pdf_summarize(message):
+    file_id = message.document.file_id
+    path = bot.get_file_url(file_id)
+    pdf = convertapi.convert('txt', { 'File': path })
+    #print(pdf.file.url)
+    data = urllib.request.urlopen(pdf.file.url)
+    a=""
+    for line in data:
+      line=str(line)
+      a+=line
+    a=summ_batches(a)
+    a=a.replace('\n',"")
+    a=a.replace('\r',"")
+
+    bot.send_message(message.chat.id,a)
+#    pass
+
+  
+def provide_functionality(message):
+  try:
+    if(message.text == "1"):
+      msg = bot.send_message(message.chat.id, "Please send the text to summarize.")
+      bot.register_next_step_handler(msg, text_summarize)
+    elif(message.text == "2"):
+      msg = bot.send_message(message.chat.id, "Please send the pdf to summarize.")
+      bot.register_next_step_handler(msg, pdf_summarize)
+    elif(message.text == "3"):
+      exit(message)
+    else:
+      msg = bot.send_message(message.chat.id,"Please select an appropriate option. Thank you!")
+      bot.register_next_step_handler(msg, provide_functionality)
+      
+  except Exception as e:
+      bot.reply_to(message, 'Something went wrong!')
+
+
+@bot.message_handler(commands=['exit'])
+def exit(message):
+  bot.send_message(message.chat.id, "OK, Thank You very much for your patience. Apologies for any kind of trouble you might have faced. It was great talking to you.")
+
+
+@bot.message_handler(content_types=['text'])
+def markup_eg(message):
+  msg = bot.send_message(message.chat.id, "Hey there, Following are the functionalities I can provide you.\n Press the number you prefer...\n 1. Summarize the Text \n 2.Summarize the PDF \n 3. Exit")
+  bot.register_next_step_handler(msg, provide_functionality)
+
+
+# bot.enable_save_next_step_handlers(delay=1)
+# bot.load_next_step_handlers()
+
+bot.polling()
+
