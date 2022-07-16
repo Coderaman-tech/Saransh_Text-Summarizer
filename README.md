@@ -62,3 +62,9 @@ nltk.download('punkt')
 #  Website
 
 <img src="Media/Screenshot (502).png"></img><br>
+
+
+## 🛠 Skills
+Javascript, HTML, CSS ,Python,GPT3,Telegram Bot
+
+
