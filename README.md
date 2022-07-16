@@ -48,9 +48,9 @@ nltk.download('punkt')
    npm run dev
 ```
  
-##Bot_Test
+## Bot_Test
  ```bash
     cd Bot
     Add Telegram_Bot token in line number 20
-    python3 index3.py
+    python3 index.py
  ```   
