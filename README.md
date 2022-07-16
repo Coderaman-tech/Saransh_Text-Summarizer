@@ -19,6 +19,7 @@ In this project, we have made an automatic text summarizzer which summarizes dif
 | :-------- |:------------------------- |
 | `api_key` | **Required**. Your API key |
 | `organisaton_key` |**Required**. Your Organisaton key |
+| `Bot_Token | **Required** Telegram Bot Token |   
 
 You need to import these libraries, if not downloaded use pip install
 ```bash
@@ -56,3 +57,9 @@ from flask_cors import CORS, cross_origin
    npm run dev
 ```
  
+##Bot_Test
+ ```bash
+    cd Bot
+    Add Telegram_Bot token in line number 27
+    python3 index3.py
+ ```   
