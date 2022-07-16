@@ -55,4 +55,6 @@ app.post("/extract-text", async (req, res) => {
     });
 });
 
-app.listen(3000 || process.env)
+app.listen(3000,()=>{
+    console.log("server running")
+})
