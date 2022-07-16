@@ -57,7 +57,7 @@ nltk.download('punkt')
  
 #  Telegram bot
 
-<img src="Media/Screenshot (501).png"></img><br>
+<img src="Media/Screenshot (501).jpg"></img><br>
 
 #  Website
 
