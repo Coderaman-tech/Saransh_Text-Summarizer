@@ -18,8 +18,7 @@ In this project, we have made an automatic text summarizzer which summarizes dif
 | Parameter |Description                |
 | :-------- |:------------------------- |
 | `api_key` | **Required**. Your API key |
-| `organisaton_key` |**Required**. Your Organisaton key |
-| `Bot_Token | **Required** Telegram Bot Token |   
+| `Bot_Token` | **Required** Telegram Bot Token |   
 
 You need to import these libraries, if not downloaded use pip install
 ```bash
@@ -28,21 +27,13 @@ import wget
 import pathlib
 import pdfplumber
 import numpy as np
-from regex import W
-import numpy as np
-import nltk
-nltk.download('stopwords')
-nltk.download('punkt')
-import string
-from gensim.models import Word2Vec
-from nltk.tokenize import sent_tokenize as nlkt_sent_tokenize
-from nltk.tokenize import word_tokenize as nlkt_word_tokenize
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from nltk.corpus import stopwords
-from scipy.spatial.distance import cosine
-from flask import Flask, jsonify,request
+from flask import Flask,request,Response
+import requests
 import json
-from flask_cors import CORS, cross_origin
+import nltk
+from flask_sslify import SSLify
+import os
+nltk.download('punkt')
 ```
 ## Tests
 
@@ -60,6 +51,6 @@ from flask_cors import CORS, cross_origin
 ##Bot_Test
  ```bash
     cd Bot
-    Add Telegram_Bot token in line number 27
+    Add Telegram_Bot token in line number 20
     python3 index3.py
  ```   
