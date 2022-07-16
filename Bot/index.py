@@ -16,8 +16,8 @@ SUMMARIZE_PREFIX = "Summarize this for a second-grade student:\n\n"
 ENGINE = "text-curie-001"
 BATCH_SIZE = 500
 NUM_TOKENS = 125
-OPENAI_API_KEY = 
-Teletoken = 
+OPENAI_API_KEY = "Your api key"
+Teletoken = "your teletoken key"
 openai.api_key = OPENAI_API_KEY
 
 welcome = "Hi, I am Saransh , a Text-Summarizer Bot. Sometime you have long Paragraph or Pages and you are don't want to read it. So, Use Me. You can send text messages or pdf and I can share Summary of it"
