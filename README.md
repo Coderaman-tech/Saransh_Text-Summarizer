@@ -53,4 +53,8 @@ nltk.download('punkt')
     cd Bot
     Add Telegram_Bot token in line number 20
     python3 index.py
- ```   
+ ``` 
+ 
+#  Telegram bot
+
+<img src="Media/Screenshot (501).png"></img><br>
