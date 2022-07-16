@@ -16,7 +16,7 @@ SUMMARIZE_PREFIX = "Summarize this for a second-grade student:\n\n"
 ENGINE = "text-curie-001"
 BATCH_SIZE = 500
 NUM_TOKENS = 125
-OPENAI_API_KEY = 
+OPENAI_API_KEY ="Your_api_key"
 openai.api_key = OPENAI_API_KEY
 
 
