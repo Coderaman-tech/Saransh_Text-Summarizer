@@ -65,6 +65,6 @@ nltk.download('punkt')
 
 
 ## 🛠 Skills
-Javascript, HTML, CSS ,Python,GPT3,Telegram Bot
+Javascript, HTML, CSS ,Python,GPT3,Flask,Telegram Bot
 
 
