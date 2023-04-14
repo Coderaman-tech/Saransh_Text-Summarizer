@@ -6,7 +6,7 @@ In this project, we have made an automatic text summarizzer which summarizes dif
 
  We make the system to generate a summary of the text and provide a JSON output for the same. Alternatively, if there are web articles, PDFs, etc uploaded by the educator, the solution is able to summarize the large content into bite-sized information.
 
-
+TelegramBot: - @Saransh_text_bot
 ## API Reference
 
 #### Get all items
